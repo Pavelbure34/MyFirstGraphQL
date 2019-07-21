@@ -7,9 +7,33 @@ import {GraphQLServer} from 'graphql-yoga';
     without !: it is optional.
     with !: it must be certain type.(required)
 
-    How to pass data from Client to Server
-    
+    How to pass data from Client to Server(Argument Operation)
+        use () brackets to the query item.
+        put your own item back in () when querying on the client.
 */
+
+//real life examples data
+const players = [
+    {
+        id:'FVD400',
+        name:'Mark',
+        level:'45',
+        class:'Wizard'
+    },
+    {
+        id:'AVX330',
+        name:'Dominik',
+        level:'30',
+        class:'Archer'
+    },
+    {
+        id:'ABC001',
+        name:'Sam',
+        level:'50',
+        class:'Warrior'
+    }
+]
+
 const typeDefs = `
     type Query{
         org:String!
@@ -18,20 +42,18 @@ const typeDefs = `
         year:Int!
         review:Float
         bankStatus:Float!
-        Me:Stat!
-        Other:[Enemy!]!
+        greeting(
+            name:String!,
+            age:Int!
+        ):String!
+        players(query:String,item:String):[player!]!
     }
 
-    type Stat{
+    type player{
         id:ID!
-        DEX:Int!
-        DEF:Int!
-        ATT:Int!
-    }
-
-    type Enemy{
-        id:ID!
-        HP:Int!
+        name:String!
+        level:Int!
+        class:String!
     }
 `;
 
@@ -47,6 +69,11 @@ const typeDefs = `
         1. every custom data should start with capital letter.
         2.In Resolver it should return the object which is  in sync
             with typeDefs
+        3.In Resolver,there can be four types of argument.
+            parent = useful for relational DATA(SQL!!)
+            args = contains information for argument
+            ctx = useful for contextual data(logged in? or not)
+            info = great information about the operation. 
 
 */
 
@@ -72,25 +99,27 @@ const resolvers = {
         bankStatus(){//Float Type
             return 3.5;
         },
-        Me(){//Custom Type
-            return {//usually data query from db is done here.
-                id:'myStat',
-                DEX:35,
-                DEF:30,
-                ATT:40
-            };
+        greeting(parent, args, ctx, info){//another example of client to server
+            const {name, age} = args;
+            return `I am ${name} and ${age} years old`; //can work this way too!
         },
-        Other(){//using arrays and custom type.
-            return [
-                {
-                    id:'ABB01',
-                    HP:10
-                },
-                {
-                    id:'ABB02',
-                    HP:15
-                }
-            ]
+        players(parent, args, ctx, info){//array of type.
+            const {item,query} = args;//always make destructure when using more than once.
+            if (!query && !item)     //if query and item is not given
+                return players;      //just show the whole items.
+            else
+                return players.filter((player)=>{
+                    /*
+                        this allows filter the search insteand of showing everything in the array.
+                        lowercase search is always recommended in order to prevent case sensitive cases.
+                        In this case, we are searching players by their names.
+                    */
+                    return (item === "id")?player.id.toLowerCase().includes(query.toLowerCase())
+                        :(item === "name")?player.name.toLowerCase().includes(query.toLowerCase()):
+                        (item === "level")?player.level.toLowerCase().includes(query.toLowerCase())
+                        :(item === "class")?player.class.toLowerCase().includes(query.toLowerCase()):
+                        {id:'none',name:'none',level:-1,class:'none'} 
+                })
         }
     }
 }
