@@ -18,22 +18,47 @@ const players = [
         id:'FVD400',
         name:'Mark',
         level:'45',
-        class:'Wizard'
+        class:'Wizard',
+        match_history:'BBV01'//write ID from the related data object for relational data.
     },
     {
         id:'AVX330',
         name:'Dominik',
         level:'30',
-        class:'Archer'
+        class:'Archer',
+        match_history:'BBV02'
     },
     {
         id:'ABC001',
         name:'Sam',
         level:'50',
-        class:'Warrior'
+        class:'Warrior',
+        match_history:'BBV03'
     }
 ]
 
+const matches = [ //data for relational data query with players
+    {
+        id:'BBV01',
+        player1:'Mark',
+        player2:'Dominik',
+        winner:'Mark'
+    },
+    {
+        id:'BBV02',
+        player1:'Sam',
+        player2:'Dominik',
+        winner:'Dominik'
+    },
+    {
+        id:'BBV03',
+        player1:'Sam',
+        player2:'Mark',
+        winner:'Mark'
+    }
+]
+
+//this is schema for graphQL.
 const typeDefs = `
     type Query{
         org:String!
@@ -54,6 +79,14 @@ const typeDefs = `
         name:String!
         level:Int!
         class:String!
+        match_history:match!
+    }
+
+    type match{
+        id:ID!
+        player1:String!
+        player2:String!
+        winner:String!
     }
 `;
 
@@ -120,6 +153,17 @@ const resolvers = {
                         :(item === "class")?player.class.toLowerCase().includes(query.toLowerCase()):
                         {id:'none',name:'none',level:-1,class:'none'} 
                 })
+        }
+    },
+    Players:{
+        match_history(parent, args, ctx, info){
+            /*
+                this function allows the relation between
+                player and match data type.
+             */
+            return matches.find((match)=>{
+                return match.id === parent.match_history;
+            })
         }
     }
 }
