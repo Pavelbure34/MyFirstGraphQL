@@ -18,43 +18,37 @@ const players = [
         id:'FVD400',
         name:'Mark',
         level:'45',
-        class:'Wizard',
-        match_history:'BBV01'//write ID from the related data object for relational data.
+        occupation:'Wizard',
+        Log:'1'
     },
     {
         id:'AVX330',
         name:'Dominik',
         level:'30',
-        class:'Archer',
-        match_history:'BBV02'
+        occupation:'Wizard',
+        Log:'2'
     },
     {
         id:'ABC001',
         name:'Sam',
         level:'50',
-        class:'Warrior',
-        match_history:'BBV03'
+        occupation:'Wizard',
+        Log:'3'
     }
 ]
 
-const matches = [ //data for relational data query with players
+const Logs = [//sample data for relationship between two data types.
     {
-        id:'BBV01',
-        player1:'Mark',
-        player2:'Dominik',
-        winner:'Mark'
+        id:'1',
+        last_access:'1400'
     },
     {
-        id:'BBV02',
-        player1:'Sam',
-        player2:'Dominik',
-        winner:'Dominik'
+        id:'2',
+        last_access:'1500'
     },
     {
-        id:'BBV03',
-        player1:'Sam',
-        player2:'Mark',
-        winner:'Mark'
+        id:'3',
+        last_access:'0700'
     }
 ]
 
@@ -71,22 +65,23 @@ const typeDefs = `
             name:String!,
             age:Int!
         ):String!
-        players(query:String,item:String):[player!]!
+        players(
+            item:String,
+            query:String
+        ):[player!]!
     }
 
     type player{
         id:ID!
         name:String!
         level:Int!
-        class:String!
-        match_history:match!
+        occupation:String!
+        Log:log!
     }
 
-    type match{
-        id:ID!
-        player1:String!
-        player2:String!
-        winner:String!
+    type log{
+        id:ID!,
+        last_access:String!
     }
 `;
 
@@ -147,22 +142,19 @@ const resolvers = {
                         lowercase search is always recommended in order to prevent case sensitive cases.
                         In this case, we are searching players by their names.
                     */
-                    return (item === "id")?player.id.toLowerCase().includes(query.toLowerCase())
-                        :(item === "name")?player.name.toLowerCase().includes(query.toLowerCase()):
-                        (item === "level")?player.level.toLowerCase().includes(query.toLowerCase())
-                        :(item === "class")?player.class.toLowerCase().includes(query.toLowerCase()):
-                        {id:'none',name:'none',level:-1,class:'none'} 
+                   const {id, name, level, occupation} = player;
+                    return (item === "id")?id.toLowerCase().includes(query.toLowerCase())
+                        :(item === "name")?name.toLowerCase().includes(query.toLowerCase()):
+                        (item === "level")?level.toLowerCase().includes(query.toLowerCase())
+                        :(item === "occupation")?occupation.toLowerCase().includes(query.toLowerCase()):
+                        {id:'none',name:'none',level:-1,occupation:'none'} 
                 })
         }
     },
-    Players:{
-        match_history(parent, args, ctx, info){
-            /*
-                this function allows the relation between
-                player and match data type.
-             */
-            return matches.find((match)=>{
-                return match.id === parent.match_history;
+    player:{
+        Log(parent,args,ctx,info){
+            return Logs.find((Log)=>{
+                return Log.id === parent.Log;
             })
         }
     }
