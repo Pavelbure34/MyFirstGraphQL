@@ -61,11 +61,12 @@ const typeDefs = `
         year:Int!
         review:Float
         bankStatus:Float!
+        Logs(id:String):[log!]!
         greeting(
             name:String!,
             age:Int!
         ):String!
-        players(
+        Players(
             item:String,
             query:String
         ):[player!]!
@@ -121,18 +122,25 @@ const resolvers = {
         year(){//Int type
             return 2017;
         },
-        review(){//Float Type
+        review(){//Float Type without !
             return;
         },
         bankStatus(){//Float Type
             return 3.5;
         },
+        Logs(parent,args,ctx,info){
+            const {id} = args;
+            return (id === "" || !id)?Logs:
+                Logs.filter((log)=>{
+                    return log.id === id;
+                });
+        },
         greeting(parent, args, ctx, info){//another example of client to server
             const {name, age} = args;
             return `I am ${name} and ${age} years old`; //can work this way too!
         },
-        players(parent, args, ctx, info){//array of type.
-            const {item,query} = args;//always make destructure when using more than once.
+        Players(parent, args, ctx, info){//array of type.
+            const {item,query} = args;//always make destructure when using more than once. 
             if (!query && !item)     //if query and item is not given
                 return players;      //just show the whole items.
             else
