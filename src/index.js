@@ -40,15 +40,18 @@ const players = [
 const Logs = [//sample data for relationship between two data types.
     {
         id:'1',
-        last_access:'1400'
+        last_access:'1400',
+        player:'FVD400'
     },
     {
         id:'2',
-        last_access:'1500'
+        last_access:'1500',
+        player:'AVX330'
     },
     {
         id:'3',
-        last_access:'0700'
+        last_access:'0700',
+        player:'ABC001'
     }
 ]
 
@@ -83,6 +86,7 @@ const typeDefs = `
     type log{
         id:ID!,
         last_access:String!
+        player:player!             
     }
 `;
 
@@ -159,11 +163,18 @@ const resolvers = {
                 })
         }
     },
-    player:{
+    player:{//log data has player. so we need to specify the relationship.
         Log(parent,args,ctx,info){
             return Logs.find((Log)=>{
                 return Log.id === parent.Log;
             })
+        }
+    },
+    log:{//log data has player. so we need to specify the relationship.
+        player(parent,args,ctx,info){
+            return players.find((player)=>{
+                return player.id === parent.player;
+            });
         }
     }
 }
