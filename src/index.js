@@ -19,21 +19,27 @@ const players = [
         name:'Mark',
         level:'45',
         occupation:'Wizard',
-        Log:'1'
+        Logs:'FVD400',
+        friendReqSent:'Mark',
+        friendReqReceive:'Mark'
     },
     {
         id:'AVX330',
         name:'Dominik',
         level:'30',
         occupation:'Wizard',
-        Log:'2'
+        Logs:'AVX330',
+        friendReqSent:'Dominik',
+        friendReqReceive:'Dominik'
     },
     {
         id:'ABC001',
         name:'Sam',
         level:'50',
         occupation:'Wizard',
-        Log:'3'
+        Logs:'ABC001',
+        friendReqSent:'Sam',
+        friendReqReceive:'Sam'
     }
 ]
 
@@ -52,6 +58,44 @@ const Logs = [//sample data for relationship between two data types.
         id:'3',
         last_access:'0700',
         player:'ABC001'
+    },
+    {
+        id:'4',
+        last_access:'2100',
+        player:'ABC001'
+    },
+    {
+        id:'5',
+        last_access:'2000',
+        player:'AVX330'
+    },
+    {
+        id:'6',
+        last_access:'2300',
+        player:'FVD400'
+    }
+]
+
+const friendRequests = [//another sample data for relationship between two data types.
+    {
+        id:'1',
+        sender:'Mark',
+        receiver:'Dominik'
+    },
+    {
+        id:'2',
+        sender:'Mark',
+        receiver:'Sam'
+    },
+    {
+        id:'3',
+        sender:'Sam',
+        receiver:'Mark'
+    },
+    {
+        id:'4',
+        sender:'Sam',
+        receiver:'Dominik'
     }
 ]
 
@@ -64,6 +108,10 @@ const typeDefs = `
         year:Int!
         review:Float
         bankStatus:Float!
+        friendRequests(
+            sender:String,
+            receiver:String
+        ):[friendRequest!]!
         Logs(id:String):[log!]!
         greeting(
             name:String!,
@@ -80,13 +128,21 @@ const typeDefs = `
         name:String!
         level:Int!
         occupation:String!
-        Log:log!
+        Logs:[log!]!
+        friendReqSent:[friendRequest!]!
+        friendReqReceive:[friendRequest!]!
     }
 
     type log{
-        id:ID!,
+        id:ID!
         last_access:String!
         player:player!             
+    }
+
+    type friendRequest{
+        id:ID!
+        sender:String!
+        receiver:String!
     }
 `;
 
@@ -111,9 +167,9 @@ const typeDefs = `
 */
 
 //Resolvers:set of functions
+//these have to match with typeDefs
 const resolvers = {
     Query:{
-        //this have to match with typeDefs
         org(){//String type
             return 'Defunct Co.';
         },
@@ -139,6 +195,19 @@ const resolvers = {
                     return log.id === id;
                 });
         },
+        friendRequests(parent,args,ctx,info){
+            const {sender,receiver} = args;
+            return (!sender && !receiver)?friendRequests:
+                (!receiver)?friendRequests.filter((request)=>{
+                    return request.sender.toLowerCase().includes(sender.toLowerCase()); 
+                }):(!sender)?friendRequests.filter((request)=>{
+                    return request.receiver.toLowerCase().includes(receiver.toLowerCase());
+                }):friendRequests.filter((request)=>{
+                    return (sender.toLowerCase().includes(request.sender.toLowerCase()) && 
+                        receiver.toLowerCase().includes(request.receiver.toLowerCase())
+                    )?request:{};//this needs to be fixed!
+                });
+        },
         greeting(parent, args, ctx, info){//another example of client to server
             const {name, age} = args;
             return `I am ${name} and ${age} years old`; //can work this way too!
@@ -159,14 +228,29 @@ const resolvers = {
                         :(item === "name")?name.toLowerCase().includes(query.toLowerCase()):
                         (item === "level")?level.toLowerCase().includes(query.toLowerCase())
                         :(item === "occupation")?occupation.toLowerCase().includes(query.toLowerCase()):
-                        {id:'none',name:'none',level:-1,occupation:'none'} 
+                        {
+                            id:'none',
+                            name:'none',
+                            level:-1,
+                            occupation:'none'
+                        } 
                 })
         }
     },
     player:{//log data has player. so we need to specify the relationship.
-        Log(parent,args,ctx,info){
-            return Logs.find((Log)=>{
-                return Log.id === parent.Log;
+        Logs(parent,args,ctx,info){
+            return Logs.filter((Log)=>{
+                return Log.player === parent.Logs;
+            })
+        },
+        friendReqSent(parent,args,ctx,info){
+            return friendRequests.filter((request)=>{
+                return request.sender === parent.friendReqSent;
+            })
+        },
+        friendReqReceive(parent,args,ctx,info){
+            return friendRequests.filter((request)=>{
+                return request.receiver === parent.friendReqReceive;
             })
         }
     },
