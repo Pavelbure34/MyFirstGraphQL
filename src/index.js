@@ -1,5 +1,6 @@
-import {GraphQLServer} from 'graphql-yoga';
-//excellent module for graphQL development both for produciton and testing.
+import {GraphQLServer} from 'graphql-yoga';//module for graphQL development both for produciton and testing.
+import uuidv4 from 'uuid/v4';              //module for random email generation
+
 
 /*
     With nodemon installed, you can actively update the server without turning it off.
@@ -16,6 +17,7 @@ import {GraphQLServer} from 'graphql-yoga';
 const players = [
     {
         id:'FVD400',
+        email:'markWahlberg@hollywood.com',
         name:'Mark',
         level:'45',
         occupation:'Wizard',
@@ -25,6 +27,7 @@ const players = [
     },
     {
         id:'AVX330',
+        email:'DominikThiem@Tennis.net',
         name:'Dominik',
         level:'30',
         occupation:'Wizard',
@@ -34,6 +37,7 @@ const players = [
     },
     {
         id:'ABC001',
+        email:'SamMendes@director.com',
         name:'Sam',
         level:'50',
         occupation:'Wizard',
@@ -99,7 +103,14 @@ const friendRequests = [//another sample data for relationship between two data 
     }
 ]
 
-//this is schema for graphQL.
+/*
+    this is schema for graphQL.
+
+    How to mutate pre-existed data,
+    write type Mutate{} and fill in all the data
+    you want to mutate within the curly brackets. 
+
+ */
 const typeDefs = `
     type Query{
         org:String!
@@ -123,8 +134,17 @@ const typeDefs = `
         ):[player!]!
     }
 
+    type Mutation{
+        createPlayer(
+            email:String!,
+            name:String!,
+            occupation:String!
+        ):player!
+    }
+
     type player{
         id:ID!
+        email:String!
         name:String!
         level:Int!
         occupation:String!
@@ -166,8 +186,10 @@ const typeDefs = `
 
 */
 
-//Resolvers:set of functions
-//these have to match with typeDefs
+/*
+    Resolvers:set of functions
+    these have to match with typeDefs
+ */
 const resolvers = {
     Query:{
         org(){//String type
@@ -191,9 +213,9 @@ const resolvers = {
         Logs(parent,args,ctx,info){
             const {id} = args;
             return (id === "" || !id)?Logs:
-                Logs.filter((log)=>{
-                    return log.id === id;
-                });
+                Logs.filter(
+                    (log)=>log.id === id
+                );
         },
         friendRequests(parent,args,ctx,info){
             const {sender,receiver} = args;
@@ -223,10 +245,11 @@ const resolvers = {
                         lowercase search is always recommended in order to prevent case sensitive cases.
                         In this case, we are searching players by their names.
                     */
-                   const {id, name, level, occupation} = player;
+                   const {id, email, name, level, occupation} = player;
                     return (item === "id")?id.toLowerCase().includes(query.toLowerCase())
-                        :(item === "name")?name.toLowerCase().includes(query.toLowerCase()):
-                        (item === "level")?level.toLowerCase().includes(query.toLowerCase())
+                        :(item === "email")?email.toLowerCase().includes(query.toLowerCase())
+                        :(item === "name")?name.toLowerCase().includes(query.toLowerCase())
+                        :(item === "level")?level.toLowerCase().includes(query.toLowerCase())
                         :(item === "occupation")?occupation.toLowerCase().includes(query.toLowerCase()):
                         {
                             id:'none',
@@ -237,28 +260,49 @@ const resolvers = {
                 })
         }
     },
+    Mutation:{//this allows changing making new data into your db.
+        createPlayer(parent,args,ctx,info){
+            const {email, name, occupation} = args;
+            //if emails are already being used, throw an error to the client.
+            if (players.some((player)=>player.email === email))
+                throw new Error('Emails are already being used.');
+            const id = uuidv4(); //generating random ID for a new player
+            const new_player = { //new player created.
+                id:id,
+                email:email,
+                name:name,
+                level:1,
+                occupation:occupation,
+                Logs:id,
+                friendReqSent:name,
+                friendReqReceive:name
+            };
+            players.push(new_player);//adding new user to the player array.
+            return new_player;       //returning the player we just created
+        }
+    },
     player:{//log data has player. so we need to specify the relationship.
         Logs(parent,args,ctx,info){
-            return Logs.filter((Log)=>{
-                return Log.player === parent.Logs;
-            })
+            return Logs.filter(
+                (Log)=>Log.player === parent.Logs
+            )
         },
         friendReqSent(parent,args,ctx,info){
-            return friendRequests.filter((request)=>{
-                return request.sender === parent.friendReqSent;
-            })
+            return friendRequests.filter(
+                (request)=>request.sender === parent.friendReqSent //simpler syntax
+            )
         },
         friendReqReceive(parent,args,ctx,info){
-            return friendRequests.filter((request)=>{
-                return request.receiver === parent.friendReqReceive;
-            })
+            return friendRequests.filter(
+                (request)=>request.receiver === parent.friendReqReceive
+            )
         }
     },
     log:{//log data has player. so we need to specify the relationship.
         player(parent,args,ctx,info){
-            return players.find((player)=>{
-                return player.id === parent.player;
-            });
+            return players.find(
+                (player)=>player.id === parent.player
+            );
         }
     }
 }
