@@ -1,6 +1,5 @@
 import {GraphQLServer} from 'graphql-yoga';//module for graphQL development both for produciton and testing.
-import uuidv4 from 'uuid/v4';              //module for random email generation
-
+import uuidv4 from 'uuid/v4';              //module for random id generation
 
 /*
     With nodemon installed, you can actively update the server without turning it off.
@@ -19,8 +18,8 @@ const players = [
         id:'FVD400',
         email:'markWahlberg@hollywood.com',
         name:'Mark',
-        level:'45',
         occupation:'Wizard',
+        level:'45',
         Logs:'FVD400',
         friendReqSent:'Mark',
         friendReqReceive:'Mark'
@@ -29,8 +28,8 @@ const players = [
         id:'AVX330',
         email:'DominikThiem@Tennis.net',
         name:'Dominik',
-        level:'30',
         occupation:'Wizard',
+        level:'30',
         Logs:'AVX330',
         friendReqSent:'Dominik',
         friendReqReceive:'Dominik'
@@ -39,8 +38,8 @@ const players = [
         id:'ABC001',
         email:'SamMendes@director.com',
         name:'Sam',
-        level:'50',
         occupation:'Wizard',
+        level:'50',
         Logs:'ABC001',
         friendReqSent:'Sam',
         friendReqReceive:'Sam'
@@ -110,6 +109,19 @@ const friendRequests = [//another sample data for relationship between two data 
     write type Mutate{} and fill in all the data
     you want to mutate within the curly brackets. 
 
+    When you have so many arguments, it will be hassel to write them down.
+    In order to make it easier, you can use input type. Since the argument can
+    only take object or scalar-type data, here is a way.
+
+        input NAME{
+            ...properties
+        }
+    When you apply them,
+        mutationOperation(data:NAME){
+            ...
+        }
+    In Resolver,use args.data instead of args. and it has to be input type.
+
  */
 const typeDefs = `
     type Query{
@@ -128,26 +140,36 @@ const typeDefs = `
             name:String!,
             age:Int!
         ):String!
-        Players(
-            item:String,
-            query:String
-        ):[player!]!
+        Players(data:queryPlayerInput):[player!]!
     }
 
     type Mutation{
-        createPlayer(
-            email:String!,
-            name:String!,
-            occupation:String!
-        ):player!
+        createPlayer(data:createPlayerInput!):player!
+        sendRequest(data:createRequestInput!):friendRequest!
+    }
+
+    input queryPlayerInput{
+        item:String!,
+        query:String!
+    }   
+
+    input createPlayerInput{
+        email:String!,
+        name:String!,
+        occupation:String!
+    }
+
+    input createRequestInput{
+        sender:String!,
+        receiver:String!
     }
 
     type player{
         id:ID!
         email:String!
         name:String!
-        level:Int!
         occupation:String!
+        level:Int!
         Logs:[log!]!
         friendReqSent:[friendRequest!]!
         friendReqReceive:[friendRequest!]!
@@ -161,8 +183,8 @@ const typeDefs = `
 
     type friendRequest{
         id:ID!
-        sender:String!
-        receiver:String!
+        sender:player!
+        receiver:player!
     }
 `;
 
@@ -218,7 +240,7 @@ const resolvers = {
                 );
         },
         friendRequests(parent,args,ctx,info){
-            const {sender,receiver} = args;
+            const {sender,receiver} = args;   //not using input type.
             return (!sender && !receiver)?friendRequests:
                 (!receiver)?friendRequests.filter((request)=>{
                     return request.sender.toLowerCase().includes(sender.toLowerCase()); 
@@ -234,9 +256,9 @@ const resolvers = {
             const {name, age} = args;
             return `I am ${name} and ${age} years old`; //can work this way too!
         },
-        Players(parent, args, ctx, info){//array of type.
-            const {item,query} = args;//always make destructure when using more than once. 
-            if (!query && !item)     //if query and item is not given
+        Players(parent, args, ctx, info){//array of type. 
+            const data = args.data;
+            if (!data)     //if query and item is not given
                 return players;      //just show the whole items.
             else
                 return players.filter((player)=>{
@@ -245,6 +267,7 @@ const resolvers = {
                         lowercase search is always recommended in order to prevent case sensitive cases.
                         In this case, we are searching players by their names.
                     */
+                   const {item,query} = data;//always make destructure when using more than once.
                    const {id, email, name, level, occupation} = player;
                     return (item === "id")?id.toLowerCase().includes(query.toLowerCase())
                         :(item === "email")?email.toLowerCase().includes(query.toLowerCase())
@@ -262,23 +285,47 @@ const resolvers = {
     },
     Mutation:{//this allows changing making new data into your db.
         createPlayer(parent,args,ctx,info){
-            const {email, name, occupation} = args;
+            const {name, email} = args.data;
             //if emails are already being used, throw an error to the client.
             if (players.some((player)=>player.email === email))
                 throw new Error('Emails are already being used.');
             const id = uuidv4(); //generating random ID for a new player
+            /*  Using spread-rest operation, these can be directly copied into.
+                const args = {       
+                    email:email,
+                    name:name,
+                    occupation:occupation
+                };
+            */
             const new_player = { //new player created.
                 id:id,
-                email:email,
-                name:name,
+                ...args.data,         //copying properties from copy
                 level:1,
-                occupation:occupation,
                 Logs:id,
                 friendReqSent:name,
                 friendReqReceive:name
             };
             players.push(new_player);//adding new user to the player array.
             return new_player;       //returning the player we just created
+        },
+        sendRequest(parent,args,ctx,info){
+            const {sender,receiver} = args.data;
+            if (players.some((player)=>player.name.toLowerCase()===sender.toLowerCase()) === false)
+                throw new Error("sender not in the player database");
+            else if (players.some((player)=>player.name.toLowerCase()===receiver.toLowerCase()) === false)
+                throw new Error("receiver not in the player database");
+            /*using transform-object-rest-spread
+                  const copy = {             
+                    sender:sender,
+                    receiver:receiver
+                };
+            */
+            const new_request = {
+                id:uuidv4(),
+                ...args.data              //copying properties from copy
+            };
+            friendRequests.push(new_request);
+            return new_request;
         }
     },
     player:{//log data has player. so we need to specify the relationship.
@@ -303,6 +350,14 @@ const resolvers = {
             return players.find(
                 (player)=>player.id === parent.player
             );
+        }
+    },
+    friendRequest:{
+        sender(parent,args,ctx,info){
+            return players.find((player)=>player.name === parent.sender);
+        },
+        receiver(parent,args,ctx,info){
+            return players.find((player)=>player.name === parent.receiver);
         }
     }
 }
