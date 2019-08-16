@@ -1,0 +1,73 @@
+ type Query{
+    org:String!
+    id:ID!
+    active:Boolean!
+    year:Int!
+    review:Float
+    bankStatus:Float!
+    friendRequests(
+        sender:String,
+        receiver:String
+    ):[friendRequest!]!
+    reqMessages:[reqMessage!]!
+    Logs(id:String):[log!]!
+    greeting(
+        name:String!,
+        age:Int!
+    ):String!
+    Players(data:queryPlayerInput):[player!]!
+}
+
+type Mutation{
+    createPlayer(data:createPlayerInput!):player!
+    sendRequest(data:createRequestInput!):friendRequest!
+    deletePlayer(id:ID!):player!
+    deleteLog(id:ID!):log!
+    deleteRequest(id:ID!):friendRequest!
+}
+
+input queryPlayerInput{
+    item:String!,
+    query:String!
+}   
+
+input createPlayerInput{
+    email:String!,
+    name:String!,
+    occupation:String!
+}
+
+input createRequestInput{
+    sender:String!,
+    receiver:String!,
+    message:String
+}
+
+type player{
+    id:ID!
+    email:String!
+    name:String!
+    occupation:String!
+    level:Int!
+    Logs:[log!]!
+    friendReqSent:[friendRequest!]!
+    friendReqReceive:[friendRequest!]!
+}
+
+type log{
+    id:ID!
+    last_access:String!
+    player:player!             
+}
+
+type friendRequest{
+    id:ID!
+    sender:player!
+    receiver:player!
+    message:reqMessage!
+}
+
+type reqMessage{
+    id:ID!
+    text:String
+}
