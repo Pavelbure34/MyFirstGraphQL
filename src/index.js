@@ -13,7 +13,7 @@ import uuidv4 from 'uuid/v4';              //module for random id generation
 */
 
 //real life examples data
-const players = [
+let players = [
     {
         id:'FVD400',
         email:'markWahlberg@hollywood.com',
@@ -46,7 +46,7 @@ const players = [
     }
 ]
 
-const Logs = [//sample data for relationship between two data types.
+let Logs = [//sample data for relationship between two data types.
     {
         id:'1',
         last_access:'1400',
@@ -79,7 +79,7 @@ const Logs = [//sample data for relationship between two data types.
     }
 ]
 
-const friendRequests = [//another sample data for relationship between two data types.
+let friendRequests = [//another sample data for relationship between two data types.
     {
         id:'1',
         sender:'Mark',
@@ -122,6 +122,14 @@ const friendRequests = [//another sample data for relationship between two data 
         }
     In Resolver,use args.data instead of args. and it has to be input type.
 
+    How to delete data in graphQL
+    You gotta remember that, when player 1 is deleted, log and other player 1 related data
+    are also to be deleted altogether. Delete operation is within the mutation.
+        deletePlayer(id:ID!):player!
+    Like this, you write the same in the typeDefs.Now in he resolvers,
+
+
+
  */
 const typeDefs = `
     type Query{
@@ -146,6 +154,7 @@ const typeDefs = `
     type Mutation{
         createPlayer(data:createPlayerInput!):player!
         sendRequest(data:createRequestInput!):friendRequest!
+        deletePlayer(id:ID!):player!
     }
 
     input queryPlayerInput{
@@ -326,6 +335,24 @@ const resolvers = {
             };
             friendRequests.push(new_request);
             return new_request;
+        },
+        deletePlayer(parent,args,ctx,info){//deletion Operation
+            const playerIndex = players.findIndex((player) => player.id === args.id); 
+            if (playerIndex === -1)//1. check if the matching user exists
+                throw new Error("Player not found.");
+            /*
+                when a matching player exists,
+                    1. delete a player from player database set
+                    2. delete other data in other database sets which a deleted player is related  
+                    3. return the deleted user data.
+             */
+            const deletedPlayer = players.splice(playerIndex, 1);                   //splice method returns returns the array of deleted items by default
+            //players = players.filter((player)=>player.id !== deletedPlayer[0].id); equivalent to this but without returning deleted data.
+            const {name,id} = deletedPlayer[0];
+            Logs = Logs.filter((log)=> log.player !== id);          //deleting related data
+            friendRequests = friendRequests.filter((request)=>
+                request.sender !== name || request.receiver !== name); 
+            return deletedPlayer[0];
         }
     },
     player:{//log data has player. so we need to specify the relationship.
