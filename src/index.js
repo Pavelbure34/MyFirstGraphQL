@@ -71,6 +71,5 @@ const server = new GraphQLServer({
 });
 
 server.start(()=>{
-    //callback functions to tell server is running right.
-    console.log("server is running....");
+    console.log("server is running...."); //callback functions to tell server is running right.
 });

@@ -1,119 +1,110 @@
-//real life examples data
-let players = [
-    {
-        id:'FVD400',
-        email:'markWahlberg@hollywood.com',
-        name:'Mark',
-        occupation:'Wizard',
-        level:'45',
-        Logs:'FVD400',
-        friendReqSent:'Mark',
-        friendReqReceive:'Mark'
-    },
-    {
-        id:'AVX330',
-        email:'DominikThiem@Tennis.net',
-        name:'Dominik',
-        occupation:'Wizard',
-        level:'30',
-        Logs:'AVX330',
-        friendReqSent:'Dominik',
-        friendReqReceive:'Dominik'
-    },
-    {
-        id:'ABC001',
-        email:'SamMendes@director.com',
-        name:'Sam',
-        occupation:'Wizard',
-        level:'50',
-        Logs:'ABC001',
-        friendReqSent:'Sam',
-        friendReqReceive:'Sam'
-    }
-]
-
-let Logs = [//sample data for relationship between two data types.
-    {
-        id:'1',
-        last_access:'1400',
-        player:'FVD400'
-    },
-    {
-        id:'2',
-        last_access:'1500',
-        player:'AVX330'
-    },
-    {
-        id:'3',
-        last_access:'0700',
-        player:'ABC001'
-    },
-    {
-        id:'4',
-        last_access:'2100',
-        player:'ABC001'
-    },
-    {
-        id:'5',
-        last_access:'2000',
-        player:'AVX330'
-    },
-    {
-        id:'6',
-        last_access:'2300',
-        player:'FVD400'
-    }
-]
-
-let friendRequests = [//another sample data for relationship between two data types.
-    {
-        id:'1',
-        sender:'Mark',
-        receiver:'Dominik',
-        message:'1'
-    },
-    {
-        id:'2',
-        sender:'Mark',
-        receiver:'Sam',
-        message:'2'
-    },
-    {
-        id:'3',
-        sender:'Sam',
-        receiver:'Mark',
-        message:'3'
-    },
-    {
-        id:'4',
-        sender:'Sam',
-        receiver:'Dominik',
-        message:'4'
-    }
-]
-
-let reqMessages = [
-    {
-        id:'1',
-        text:'Hallo!'
-    },
-    {
-        id:'2',
-        text:'guten Tag!'
-    },
-    {
-        id:'3',
-        text:'Hello!'
-    },
-    {
-        id:'4',
-        text:'Hey!'
-    }
-]
-
-export default {
-    players,
-    Logs,
-    friendRequests,
-    reqMessages
-}; 
+export default {//real life examples data
+    players: [
+        {
+            id:'FVD400',
+            email:'markWahlberg@hollywood.com',
+            name:'Mark',
+            occupation:'Wizard',
+            level:'45',
+            Logs:'FVD400',
+            friendReqSent:'Mark',
+            friendReqReceive:'Mark'
+        },
+        {
+            id:'AVX330',
+            email:'DominikThiem@Tennis.net',
+            name:'Dominik',
+            occupation:'Wizard',
+            level:'30',
+            Logs:'AVX330',
+            friendReqSent:'Dominik',
+            friendReqReceive:'Dominik'
+        },
+        {
+            id:'ABC001',
+            email:'SamMendes@director.com',
+            name:'Sam',
+            occupation:'Wizard',
+            level:'50',
+            Logs:'ABC001',
+            friendReqSent:'Sam',
+            friendReqReceive:'Sam'
+        }
+    ],
+    Logs: [//sample data for relationship between two data types.
+        {
+            id:'1',
+            last_access:'1400',
+            player:'FVD400'
+        },
+        {
+            id:'2',
+            last_access:'1500',
+            player:'AVX330'
+        },
+        {
+            id:'3',
+            last_access:'0700',
+            player:'ABC001'
+        },
+        {
+            id:'4',
+            last_access:'2100',
+            player:'ABC001'
+        },
+        {
+            id:'5',
+            last_access:'2000',
+            player:'AVX330'
+        },
+        {
+            id:'6',
+            last_access:'2300',
+            player:'FVD400'
+        }
+    ],
+    friendRequests:[//another sample data for relationship between two data types.
+        {
+            id:'1',
+            sender:'Mark',
+            receiver:'Dominik',
+            message:'1'
+        },
+        {
+            id:'2',
+            sender:'Mark',
+            receiver:'Sam',
+            message:'2'
+        },
+        {
+            id:'3',
+            sender:'Sam',
+            receiver:'Mark',
+            message:'3'
+        },
+        {
+            id:'4',
+            sender:'Sam',
+            receiver:'Dominik',
+            message:'4'
+        }
+    ],
+    reqMessages:[
+        {
+            id:'1',
+            text:'Hallo!'
+        },
+        {
+            id:'2',
+            text:'guten Tag!'
+        },
+        {
+            id:'3',
+            text:'Hello!'
+        },
+        {
+            id:'4',
+            text:'Hey!'
+        }
+    ]
+};
