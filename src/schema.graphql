@@ -22,8 +22,21 @@ type Mutation{
     createPlayer(data:createPlayerInput!):player!
     sendRequest(data:createRequestInput!):friendRequest!
     deletePlayer(id:ID!):player!
+    updatePlayer(id:ID!,data:updatePlayerInput):player!
     deleteLog(id:ID!):log!
+    updateLog(id:ID!,data:updateLogInput):log!
     deleteRequest(id:ID!):friendRequest!
+}
+
+input updateLogInput{
+    newAccess:String
+    newPlayer:String
+}
+
+input updatePlayerInput{
+    newEmail:String
+    newOccupation:String
+    newLevel:Int
 }
 
 input queryPlayerInput{

@@ -1,6 +1,6 @@
 import {GraphQLServer} from 'graphql-yoga';//module for graphQL development both for produciton and testing.
 import resolvers from './resolvers';
-import db from './db';                     //separate file for database
+import context from './context';                      
 
 /*
     With nodemon installed, you can actively update the server without turning it off.
@@ -11,36 +11,7 @@ import db from './db';                     //separate file for database
     How to pass data from Client to Server(Argument Operation)
         use () brackets to the query item.
         put your own item back in () when querying on the client.
-*/
 
-/*
-    this is schema for graphQL.
-
-    How to mutate pre-existed data,
-    write type Mutate{} and fill in all the data
-    you want to mutate within the curly brackets. 
-
-    When you have so many arguments, it will be hassel to write them down.
-    In order to make it easier, you can use input type. Since the argument can
-    only take object or scalar-type data, here is a way.
-
-        input NAME{
-            ...properties
-        }
-    When you apply them,
-        mutationOperation(data:NAME){
-            ...
-        }
-    In Resolver,use args.data instead of args. and it has to be input type.
-
-    How to delete data in graphQL
-    You gotta remember that, when player 1 is deleted, log and other player 1 related data
-    are also to be deleted altogether. Delete operation is within the mutation.
-        deletePlayer(id:ID!):player!
-    Like this, you write the same in the typeDefs.Now in he resolvers,
- */
-
-/*
     Scalar Value: type that stores single value.
         Five Main Types of data
             1.String: you know what that is
@@ -58,6 +29,9 @@ import db from './db';                     //separate file for database
             ctx = useful for contextual data(logged in? or not)
             info = great information about the operation. 
 
+    './src/schema.graphql'
+    this is schema for graphQL.
+
 */
 
 //graphQLServer needs two parameters:
@@ -65,9 +39,7 @@ import db from './db';                     //separate file for database
 const server = new GraphQLServer({
     typeDefs:'./src/schema.graphql',//path to the schema file!
     resolvers,
-    context:{//context is for universal datas which app should share.
-        db
-    }
+    context
 });
 
 server.start(()=>{

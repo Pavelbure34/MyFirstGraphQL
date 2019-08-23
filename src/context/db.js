@@ -1,4 +1,4 @@
-export default {//real life examples data
+const db = {//real life examples data
     players: [
         {
             id:'FVD400',
@@ -108,3 +108,5 @@ export default {//real life examples data
         }
     ]
 };
+
+export default db;//separate file for database

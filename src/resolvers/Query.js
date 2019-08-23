@@ -1,3 +1,24 @@
+/*
+    When you have so many arguments, it will be hassel to write them down.
+    In order to make it easier, you can use input type. Since the argument can
+    only take object or scalar-type data, here is a way.
+
+        input NAME{
+            ...properties
+        }
+    When you apply them,
+        mutationOperation(data:NAME){
+            ...
+        }
+    In Resolver,use args.data instead of args. and it has to be input type.
+
+    How to delete data in graphQL
+    You gotta remember that, when player 1 is deleted, log and other player 1 related data
+    are also to be deleted altogether. Delete operation is within the mutation.
+        deletePlayer(id:ID!):player!
+    Like this, you write the same in the typeDefs.Now in he resolvers,
+ */
+
 const Query = {
     org(){//String type
         return 'Defunct Co.';

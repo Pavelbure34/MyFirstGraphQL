@@ -1,17 +1,17 @@
 const player = {//log data has player. so we need to specify the relationship.
-    Logs(parent, args, {db}, info){
+    Logs({Logs}, args, {db}, info){
         return db.Logs.filter(
-            (Log)=>Log.player === parent.Logs
+            (Log)=>Log.player === Logs
         )
     },
-    friendReqSent(parent, args, {db}, info){
+    friendReqSent({friendReqSent}, args, {db}, info){
         return db.friendRequests.filter(
-            (request)=>request.sender === parent.friendReqSent //simpler syntax
+            (request)=>request.sender === friendReqSent //simpler syntax
         )
     },
-    friendReqReceive(parent, args, {db}, info){
+    friendReqReceive({friendReqReceive}, args, {db}, info){
         return db.friendRequests.filter(
-            (request)=>request.receiver === parent.friendReqReceive
+            (request)=>request.receiver === friendReqReceive
         )
     }
 };

@@ -55,8 +55,8 @@ const Mutation = {//this allows changing making new data into your db.
         return new_request;
     },
     deletePlayer(parent, args, {db}, info){//deletion Operation
-        const {players, Logs, friendRequests} = db;
-        const playerIndex = players.findIndex((player) => player.id === args.id); 
+        let {players, Logs, friendRequests} = db; //let because of mutation operation
+        const playerIndex = players.findIndex(player => player.id === args.id); 
         if (playerIndex === -1)//1. check if the matching user exists
             throw new Error("Player not found.");
         /*
@@ -65,31 +65,69 @@ const Mutation = {//this allows changing making new data into your db.
                 2. delete other data in other database sets which a deleted player is related  
                 3. return the deleted user data.
          */
-        const deletedPlayer = players.splice(playerIndex, 1);                   //splice method returns returns the array of deleted items by default
+        const deletedPlayer = players.splice(playerIndex, 1);//splice method returns returns the array of deleted items by default
         //players = players.filter((player)=>player.id !== deletedPlayer[0].id); equivalent to this but without returning deleted data.
         const {name,id} = deletedPlayer[0];
-        Logs = Logs.filter((log)=> log.player !== id);          //deleting related data
-        friendRequests = friendRequests.filter((request)=>
+        Logs = Logs.filter(log=> log.player !== id);          //deleting related data
+        friendRequests = friendRequests.filter(request=>
             request.sender !== name || request.receiver !== name); 
         return deletedPlayer[0];
     },
+    updatePlayer(parent, {id, data}, {db}, info){
+        let {players} = db;                                                //use let for mutation operation.
+        if (!data)                                                         //no data is input,
+            return players.find(player=>player.id === id);                 //just return the player
+        const {newEmail, newOccupation, newLevel} = data;                  //data for updated information
+        const playerIndex = players.findIndex(player => player.id === id); //index for player.
+        if (playerIndex === -1)                                            //if player does not exist, 
+            throw new Error("Player not found");                           //throw an error
+        else
+            if (newEmail !== null && typeof newEmail === 'string' && players.some(player=>player.email === newEmail))
+                throw new Error("Email already taken");
+        let player_to_update = players[playerIndex];
+        const {email, level, occupation} = player_to_update;
+        player_to_update.email = (newEmail !== null)?newEmail:email;
+        player_to_update.occupation = (newOccupation !== null)?newOccupation:occupation;
+        player_to_update.level = (newLevel !== null)?newLevel:level;
+        players[playerIndex] = player_to_update; 
+        return player_to_update;
+    },
     deleteLog(parent, {id}, {db}, info){
-        const {Logs} = db;
-        const logIndex = Logs.findIndex((log)=>log.id === id); 
+        let  {Logs} = db; //let because of mutation operation
+        const logIndex = Logs.findIndex(log => log.id === id); 
         if (logIndex === -1) //does the log I try to delete exists?
             throw new Error("Log not found");
         const deletedLog = Logs[logIndex];
         Logs = Logs.filter((log)=>log.id !== id);
         return deletedLog;
     },
+    updateLog(parent, {id, data}, {db}, info){      //work on this.
+        let {Logs, players} = db;
+        const logIndex = Logs.findIndex(log => log.id === id);
+        if (!data)
+            return Logs.find(log=>log.id === id);
+        if (logIndex === -1)
+            throw new Error("Log not found");
+        const {newAccess, newPlayer} = data;
+        let log_to_update = Logs[logIndex];
+        const {last_access, player} = log_to_update;
+        if (!players.find(player=>player.id === newPlayer))
+            throw new Error('Player not found!');
+        if (newAccess.length !== 4)
+            throw new Error('Access has to be 4 long time string');
+        log_to_update.newPlayer = (newPlayer !== null)?newPlayer:player;
+        log_to_update.last_access = (newAccess !== null)?newAccess:last_access;
+        Logs[logIndex] = log_to_update;
+        return log_to_update;
+    },
     deleteRequest(parent, {id}, {db}, info){
-        const {friendRequests, reqMessages} = db;
-        const requestIndex = friendRequests.findIndex((request)=>request.id === id);
+        let {friendRequests, reqMessages} = db; //let because of mutation operation
+        const requestIndex = friendRequests.findIndex(request => request.id === id);
         if (requestIndex === -1) //does the request I try to delete exists?
             throw new Error("friendRequest not found");
         const deletedReq = friendRequests[requestIndex];
-        friendRequests = friendRequests.filter((request)=>request.id !== id);
-        reqMessages = reqMessages.filter((message)=>message.id !== deletedReq.message);
+        friendRequests = friendRequests.filter(request => request.id !== id);
+        reqMessages = reqMessages.filter(message => message.id !== deletedReq.message);
         return deletedReq;
     }
 };
