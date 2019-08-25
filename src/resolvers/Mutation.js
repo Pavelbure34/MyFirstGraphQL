@@ -75,22 +75,19 @@ const Mutation = {//this allows changing making new data into your db.
     },
     updatePlayer(parent, {id, data}, {db}, info){
         let {players} = db;                                                //use let for mutation operation.
+        if (playerIndex === -1)                                            //if player does not exist, 
+            throw new Error("Player not found");                           //throw an error
         if (!data)                                                         //no data is input,
             return players.find(player=>player.id === id);                 //just return the player
         const {newEmail, newOccupation, newLevel} = data;                  //data for updated information
         const playerIndex = players.findIndex(player => player.id === id); //index for player.
-        if (playerIndex === -1)                                            //if player does not exist, 
-            throw new Error("Player not found");                           //throw an error
-        else
-            if (newEmail !== null && typeof newEmail === 'string' && players.some(player=>player.email === newEmail))
-                throw new Error("Email already taken");
-        let player_to_update = players[playerIndex];
-        const {email, level, occupation} = player_to_update;
-        player_to_update.email = (newEmail !== null)?newEmail:email;
-        player_to_update.occupation = (newOccupation !== null)?newOccupation:occupation;
-        player_to_update.level = (newLevel !== null)?newLevel:level;
-        players[playerIndex] = player_to_update; 
-        return player_to_update;
+        if (newEmail !== null && typeof newEmail === 'string' && players.some(player=>player.email === newEmail))
+            throw new Error("Email already taken");
+        const {email, level, occupation} = players[playerIndex];
+        players[playerIndex].email = (newEmail !== null)?newEmail:email;
+        players[playerIndex].occupation = (newOccupation !== null)?newOccupation:occupation;
+        players[playerIndex].level = (newLevel !== null)?newLevel:level; 
+        return players[playerIndex];
     },
     deleteLog(parent, {id}, {db}, info){
         let  {Logs} = db; //let because of mutation operation
@@ -104,21 +101,19 @@ const Mutation = {//this allows changing making new data into your db.
     updateLog(parent, {id, data}, {db}, info){      //work on this.
         let {Logs, players} = db;
         const logIndex = Logs.findIndex(log => log.id === id);
-        if (!data)
-            return Logs.find(log=>log.id === id);
         if (logIndex === -1)
             throw new Error("Log not found");
+        if (!data)
+            return Logs.find(log=>log.id === id);
         const {newAccess, newPlayer} = data;
-        let log_to_update = Logs[logIndex];
-        const {last_access, player} = log_to_update;
+        const {last_access, player} = Logs[logIndex];
         if (!players.find(player=>player.id === newPlayer))
             throw new Error('Player not found!');
         if (newAccess.length !== 4)
             throw new Error('Access has to be 4 long time string');
-        log_to_update.newPlayer = (newPlayer !== null)?newPlayer:player;
-        log_to_update.last_access = (newAccess !== null)?newAccess:last_access;
-        Logs[logIndex] = log_to_update;
-        return log_to_update;
+        Logs[logIndex].player = (newPlayer !== null)?newPlayer:player;
+        Logs[logIndex].last_access = (newAccess !== null)?newAccess:last_access;
+        return Logs[logIndex];
     },
     deleteRequest(parent, {id}, {db}, info){
         let {friendRequests, reqMessages} = db; //let because of mutation operation
@@ -129,6 +124,25 @@ const Mutation = {//this allows changing making new data into your db.
         friendRequests = friendRequests.filter(request => request.id !== id);
         reqMessages = reqMessages.filter(message => message.id !== deletedReq.message);
         return deletedReq;
+    },
+    updateRequest(parent,{id,data},{db},info){
+        let {friendRequests, players, reqMessages} = db;               //destructured databases.
+        const reqIndex = friendRequests.findIndex(req=>req.id === id); //our target exist or not?
+        if (reqIndex === -1)                                           //if not
+            throw new Error('no Request found!');                      //throw an error
+        if (!data)                                                     //if data is not given
+            return friendRequests[reqIndex];                           //return the default values
+        const {newSender, newReceiver, newMessage} = data;             //if exists
+        if (!players.find(player=>player.name === newSender) ||
+            !players.find(player=>player.name === newReceiver))        //does sender and receiver exists?
+            throw new Error('receiving or sending Player not found!'); //if not, throw an error
+        const {sender, receiver} = friendRequests[reqIndex];           //if so,
+        friendRequests[reqIndex].sender = (newSender === null)?sender:newSender;//update the data. if empty string is given, keep the original.
+        friendRequests[reqIndex].receiver = (newReceiver === null)?receiver:newReceiver;
+        const messageIndex = reqMessages.findIndex(message=>message.id === friendRequests[reqIndex].message);
+        const {text} = reqMessages[messageIndex];
+        reqMessages[messageIndex].text = (newMessage === null)?text:newMessage;
+        return friendRequests[reqIndex];//return the object!
     }
 };
 

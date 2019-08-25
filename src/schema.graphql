@@ -26,6 +26,13 @@ type Mutation{
     deleteLog(id:ID!):log!
     updateLog(id:ID!,data:updateLogInput):log!
     deleteRequest(id:ID!):friendRequest!
+    updateRequest(id:ID!,data:updateReqInput):friendRequest!
+}
+
+input updateReqInput{
+    newSender:String
+    newReceiver:String
+    newMessage:String
 }
 
 input updateLogInput{
