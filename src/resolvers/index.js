@@ -3,6 +3,7 @@ import Mutation from './Mutation';
 import player from './player';
 import log from './log';
 import friendRequest from './friendRequest'; 
+import Subscription from './Subscription';
 
 /*
     This is resolvers which is a set of functions.
@@ -12,6 +13,7 @@ import friendRequest from './friendRequest';
 export default {
     Query,
     Mutation,
+    Subscription,
     player,
     log,
     friendRequest

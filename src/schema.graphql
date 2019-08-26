@@ -29,6 +29,10 @@ type Mutation{
     updateRequest(id:ID!,data:updateReqInput):friendRequest!
 }
 
+type Subscription{
+    count:Int!
+}
+
 input updateReqInput{
     newSender:String
     newReceiver:String
