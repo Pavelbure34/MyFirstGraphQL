@@ -1,5 +1,5 @@
 const Subscription = {
-    count:{
+    count:{//this has to be object not method.
         subscribe(parent, args, {pubsub}, info){
             /*
                 For example dummy subscription,
@@ -26,6 +26,14 @@ const Subscription = {
                 });
             },3000);//interval with 3 seconds
             return pubsub.asyncIterator('count');//argument is the channel name.
+        }
+    },
+    reqNotify:{
+        subscribe(parent,{receiver},{pubsub, db},info){
+            const reqs = db.friendRequests.find(req=>req.receiver === receiver);
+            if (!reqs)//if receiver is not found, throw new error.
+                throw new Error("friend request not found.");
+            return pubsub.asyncIterator(`friendReq ${receiver}`);//argument is channel name.            
         }
     }
 }

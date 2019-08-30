@@ -1,4 +1,5 @@
 import uuidv4 from 'uuid/v4';              //module for random id generation
+import { PubSub } from 'graphql-yoga';
 
 const Mutation = {//this allows changing making new data into your db.
     createPlayer(parent,{data},{db},info){
@@ -26,7 +27,7 @@ const Mutation = {//this allows changing making new data into your db.
         players.push(new_player);//adding new user to the player array.
         return new_player;       //returning the player we just created
     },
-    sendRequest(parent,{data},{db},info){
+    sendRequest(parent,{data},{db, pubsub},info){
         const {players, friendRequests, reqMessages} = db;
         const {sender, receiver, message} = data;
         if (players.some((player)=>player.name.toLowerCase()===sender.toLowerCase()) === false)
@@ -40,18 +41,21 @@ const Mutation = {//this allows changing making new data into your db.
             };
         */
        const messageID = uuidv4();
-       const newMessage = {
-            id:messageID,
-            text:message
-       };
         const new_request = {
             id:uuidv4(),
-            sender:sender,
-            receiver:receiver,
+            sender,
+            receiver,
             message:messageID
         };
         friendRequests.push(new_request);
-        reqMessages.push(newMessage);
+        reqMessages.push({
+            id:messageID,
+            text:(!message)?'':message
+        });
+        //since friendRequest subscription takes response from this mutation method...
+        pubsub.publish(`friendReq ${receiver}`,{
+            new_request//data to be flow in
+        });
         return new_request;
     },
     deletePlayer(parent, args, {db}, info){//deletion Operation

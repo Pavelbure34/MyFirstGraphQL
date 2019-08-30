@@ -1,12 +1,12 @@
 const friendRequest = {
-    sender(parent, args, {db}, info){
-        return db.players.find((player)=>player.name === parent.sender);
+    sender({sender}, args, {db}, info){
+        return db.players.find((player)=>player.name === sender);
     },
-    receiver(parent, args, {db}, info){
-        return db.players.find((player)=>player.name === parent.receiver);
+    receiver({receiver}, args, {db}, info){
+        return db.players.find((player)=>player.name === receiver);
     },
-    message(parent,args, {db}, info){
-        return db.reqMessages.find((reqMessage)=>reqMessage.id === parent.message);
+    message({message},args, {db}, info){
+        return db.reqMessages.find((reqMessage)=>reqMessage.id === message);
     }
 };
 
