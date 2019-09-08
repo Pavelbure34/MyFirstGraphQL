@@ -36,11 +36,9 @@ import context from './context';
 
 //graphQLServer needs two parameters:
 //object whose properties are typedefs and resolvers
-const server = new GraphQLServer({
-    typeDefs:'./src/schema.graphql',//path to the schema file!
-    resolvers,
-    context
-});
+
+const typeDefs = './src/schema.graphql';//path to the schema file! 
+const server = new GraphQLServer({typeDefs, resolvers, context});
 
 server.start(()=>{
     console.log("server is running...."); //callback functions to tell server is running right.

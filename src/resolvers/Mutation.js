@@ -1,8 +1,7 @@
 import uuidv4 from 'uuid/v4';              //module for random id generation
-import { PubSub } from 'graphql-yoga';
 
 const Mutation = {//this allows changing making new data into your db.
-    createPlayer(parent,{data},{db},info){
+    createPlayer(parent,{data},{db, pubsub},info){
         const {players} = db;
         const {name, email} = data;
         //if emails are already being used, throw an error to the client.
@@ -25,6 +24,13 @@ const Mutation = {//this allows changing making new data into your db.
             friendReqReceive:name
         };
         players.push(new_player);//adding new user to the player array.
+        pubsub.publish(`Players`,{
+            Players:{
+                new:new_player,
+                edited:null,
+                deleted:null
+            }
+        });//sending changes in the player pool
         return new_player;       //returning the player we just created
     },
     sendRequest(parent,{data},{db, pubsub},info){
@@ -52,13 +58,12 @@ const Mutation = {//this allows changing making new data into your db.
             id:messageID,
             text:(!message)?'':message
         });
+        console.log(new_request);
         //since friendRequest subscription takes response from this mutation method...
-        pubsub.publish(`friendReq ${receiver}`,{
-            new_request//data to be flow in
-        });
+        pubsub.publish(`friendReq ${receiver}`,{reqNotify:new_request});
         return new_request;
     },
-    deletePlayer(parent, args, {db}, info){//deletion Operation
+    deletePlayer(parent, args, {db, pubsub}, info){//deletion Operation
         let {players, Logs, friendRequests} = db; //let because of mutation operation
         const playerIndex = players.findIndex(player => player.id === args.id); 
         if (playerIndex === -1)//1. check if the matching user exists
@@ -72,12 +77,19 @@ const Mutation = {//this allows changing making new data into your db.
         const deletedPlayer = players.splice(playerIndex, 1);//splice method returns returns the array of deleted items by default
         //players = players.filter((player)=>player.id !== deletedPlayer[0].id); equivalent to this but without returning deleted data.
         const {name,id} = deletedPlayer[0];
+        pubsub.publish(`Players`,{
+            Players:{
+                new:null,
+                edited:null,
+                deleted:deletedPlayer[0]
+            }
+        });//sending changes in the player pool
         Logs = Logs.filter(log=> log.player !== id);          //deleting related data
         friendRequests = friendRequests.filter(request=>
             request.sender !== name || request.receiver !== name); 
         return deletedPlayer[0];
     },
-    updatePlayer(parent, {id, data}, {db}, info){
+    updatePlayer(parent, {id, data}, {db, pubsub}, info){
         let {players} = db;                                                //use let for mutation operation.
         if (playerIndex === -1)                                            //if player does not exist, 
             throw new Error("Player not found");                           //throw an error
@@ -90,7 +102,14 @@ const Mutation = {//this allows changing making new data into your db.
         const {email, level, occupation} = players[playerIndex];
         players[playerIndex].email = (newEmail !== null)?newEmail:email;
         players[playerIndex].occupation = (newOccupation !== null)?newOccupation:occupation;
-        players[playerIndex].level = (newLevel !== null)?newLevel:level; 
+        players[playerIndex].level = (newLevel !== null)?newLevel:level;
+        pubsub.publish(`Players`,{
+            Players:{
+                new:null,
+                edited:players[playerIndex],
+                deleted:null
+            }
+        });//sending changes in the player pool
         return players[playerIndex];
     },
     deleteLog(parent, {id}, {db}, info){

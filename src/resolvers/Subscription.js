@@ -35,6 +35,11 @@ const Subscription = {
                 throw new Error("friend request not found.");
             return pubsub.asyncIterator(`friendReq ${receiver}`);//argument is channel name.            
         }
+    },
+    Players:{
+        subscribe(parent,args,{pubsub},info){
+            return pubsub.asyncIterator(`Players`);
+        }
     }
 }
 

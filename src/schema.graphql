@@ -32,6 +32,13 @@ type Mutation{
 type Subscription{
     count:Int!
     reqNotify(receiver:String!):friendRequest!
+    Players:playerSubscriptionPayload
+}
+
+type playerSubscriptionPayload{
+    new:player
+    edited:player
+    deleted:player
 }
 
 input updateReqInput{
